@@ -122,7 +122,6 @@ with col2:
             <h2>🎉 ¡Diversión a lo grande! 🎉</h2>
             <p><b>Fecha:</b> Sábado, 19 de Diciembre de 2026</p>
             <p><b>Hora:</b> 3:00 PM</p>
-            <p><i><b>Dirección:</b> Cóndor 7, Colonia Bellavista, Álvaro Obregón, CDMX</i></p>
             <hr style="border: 0.5px dashed #0099ff; margin: 15px 0;">
             <p style="font-size: 0.95rem; color: #e91e63 !important;"><b>💡 Nota:</b> Te enviaremos un recordatorio especial 3 días antes del evento.</p>
         </div>
