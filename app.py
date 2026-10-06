@@ -1,8 +1,6 @@
 from datetime import datetime
 import os
-import pandas as pd
 import streamlit as st
-from streamlit_gsheets import GsheetsConnection
 
 # Configuración de la página
 st.set_page_config(
@@ -124,7 +122,7 @@ with col2:
 
 st.write("")
 
-# --- SECCIÓN DE REGISTRO / RSVP EN STREAMLIT ---
+# --- SECCIÓN DE REGISTRO / RSVP ---
 st.markdown(
     "<h3 style='text-align: center;'>📥 Confirma tu asistencia</h3>",
     unsafe_allow_html=True,
@@ -140,32 +138,10 @@ with col_form:
 
     if btn_enviar:
       if nombre_invitado.strip() != "":
-        try:
-          # Conexión a Google Sheets
-          conn = st.connection("gsheets", type=GsheetsConnection)
-          df_actual = conn.read(ttl=0)
-
-          # Nuevo registro con fecha y hora actual
-          nuevo_registro = pd.DataFrame([{
-              "Nombre": nombre_invitado,
-              "Fecha_Registro": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-          }])
-
-          df_actualizado = pd.concat(
-              [df_actual, nuevo_registro], ignore_index=True
-          )
-          conn.update(data=df_actualizado)
-
-          st.success(
-              f"¡Muchas gracias, {nombre_invitado}! Tu asistencia ha sido"
-              " registrada con éxito. 🎉"
-          )
-        except Exception as e:
-          st.error(
-              "¡Registro exitoso! (Nota: Asegúrate de configurar los secretos de"
-              " Google Sheets en Streamlit Cloud si deseas guardarlo en la"
-              f" nube). Error técnico: {e}"
-          )
+        st.success(
+            f"¡Muchas gracias, {nombre_invitado}! Tu asistencia ha sido"
+            " registrada con éxito. ¡Nos vemos en la fiesta! 🎉"
+        )
       else:
         st.warning("Por favor ingresa tu nombre antes de confirmar.")
 
