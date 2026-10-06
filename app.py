@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+from streamlit_gsheets import GsheetsConnection
 import streamlit as st
 
 # Configuración de la página
@@ -71,20 +72,11 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --- MOSTRAR IMAGEN DE POCOYÓ ---
-# Si guardas una imagen llamada 'pocoyo.png' en tu carpeta, la mostrará automáticamente al centro
+# Imagen de Pocoyó
 col_img1, col_img2, col_img3 = st.columns([1, 2, 1])
 with col_img2:
   if os.path.exists("pocoyo.png"):
     st.image("pocoyo.png", use_container_width=True)
-  else:
-    # Mensaje temporal por si aún no descargas la imagen
-    st.markdown(
-        "<p style='text-align: center; color: #ffeb3b; font-size: 0.9rem;'>(💡"
-        " Tip: Guarda una imagen llamada <b>pocoyo.png</b> en tu carpeta para"
-        " que aparezca aquí)</p>",
-        unsafe_allow_html=True,
-    )
 
 st.write("")
 
@@ -97,7 +89,7 @@ horas_faltantes = divmod(diferencia.seconds, 3600)[0]
 
 if dias_faltantes > 0:
   texto_contador = (
-      f"⏳ ¡Faltan {dias_faltantes} días y {horas_faltantes} horas para la"
+      f"⏳ ¡Faltan **{dias_faltantes} días** y {horas_faltantes} horas para la"
       " gran fiesta! 🎉"
   )
 elif dias_faltantes == 0:
@@ -113,7 +105,7 @@ st.markdown(
     f"<div class='caja-contador'>{texto_contador}</div>", unsafe_allow_html=True
 )
 
-# Tarjeta central con los detalles
+# Tarjeta central con los detalles (sin dirección por ahora)
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
   st.markdown(
@@ -122,8 +114,9 @@ with col2:
             <h2>🎉 ¡Diversión a lo grande! 🎉</h2>
             <p><b>Fecha:</b> Sábado, 19 de Diciembre de 2026</p>
             <p><b>Hora:</b> 3:00 PM</p>
+            <p><i><b>Lugar:</b> ¡Próximamente por definir! 📍</i></p>
             <hr style="border: 0.5px dashed #0099ff; margin: 15px 0;">
-            <p style="font-size: 0.95rem; color: #e91e63 !important;"><b>💡 Nota:</b> Te enviaremos un recordatorio especial 3 días antes del evento.</p>
+            <p style="font-size: 0.95rem; color: #e91e63 !important;"><b>💡 Nota:</b> Te enviaremos la ubicación exacta y un recordatorio antes del evento.</p>
         </div>
     """,
       unsafe_allow_html=True,
@@ -131,7 +124,7 @@ with col2:
 
 st.write("")
 
-# Sección interactiva de Confirmación de Asistencia (RSVP)
+# Sección interactiva de Confirmación de Asistencia (RSVP) conectado a Google Sheets
 st.markdown(
     "<h3 style='text-align: center;'>📥 Confirma tu asistencia</h3>",
     unsafe_allow_html=True,
@@ -143,11 +136,34 @@ with col_form:
 
   if st.button("¡Sí voy a asistir! 🚀", use_container_width=True):
     if nombre_invitado.strip() != "":
-      st.success(
-          f"¡Yupi, **{nombre_invitado}**! Tu asistencia a la fiesta de Emil ha"
-          " quedado registrada. ¡Te esperamos! 🎊"
-      )
+      try:
+        # Conexión a Google Sheets
+        conn = st.connection("gsheets", type=GsheetsConnection)
+        # Leer datos actuales
+        existing_data = conn.read(worksheet="Asistencias", ttl=5)
+
+        # Crear nueva fila con el nombre y la hora actual
+        import pandas as pd
+
+        nueva_fila = pd.DataFrame([{
+            "Nombre": nombre_invitado.strip(),
+            "Fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }])
+
+        # Unir los datos nuevos con los existentes
+        updated_data = pd.concat([existing_data, nueva_fila], ignore_index=True)
+
+        # Actualizar la hoja de cálculo
+        conn.update(worksheet="Asistencias", data=updated_data)
+
+        st.success(
+            f"¡Yupi, **{nombre_invitado}**! Tu asistencia a la fiesta de Emil ha"
+            " quedado registrada en nuestra lista. ¡Te esperamos! 🎊"
+        )
+      except Exception as e:
+        st.error(
+            "Hubo un pequeño detalle al conectar con la lista, pero tu"
+            f" entusiasmo ya quedó anotado. (Error: {e})"
+        )
     else:
       st.warning("Por favor, escribe tu nombre antes de confirmar.")
-
-# Pie de página
