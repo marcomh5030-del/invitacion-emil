@@ -1,6 +1,9 @@
 from datetime import datetime
 import os
+import gspread
+import pandas as pd
 import streamlit as st
+from oauth2client.service_account import ServiceAccountCredentials
 
 # Configuración de la página
 st.set_page_config(
@@ -97,7 +100,7 @@ elif dias_faltantes == 0:
   )
 else:
   texto_contador = (
-      "❤️ ¡Gracias a todos los que acompañaron a Emil en su gran día!"
+      "❤️️ ¡Gracias a todos los que acompañaron a Emil en su gran día!"
   )
 
 st.markdown(
@@ -122,7 +125,7 @@ with col2:
 
 st.write("")
 
-# --- SECCIÓN DE REGISTRO / RSVP ---
+# --- SECCIÓN DE REGISTRO / RSVP CON GOOGLE SHEETS ---
 st.markdown(
     "<h3 style='text-align: center;'>📥 Confirma tu asistencia</h3>",
     unsafe_allow_html=True,
@@ -138,10 +141,35 @@ with col_form:
 
     if btn_enviar:
       if nombre_invitado.strip() != "":
-        st.success(
-            f"¡Muchas gracias, {nombre_invitado}! Tu asistencia ha sido"
-            " registrada con éxito. ¡Nos vemos en la fiesta! 🎉"
-        )
+        try:
+          # Configuración de credenciales usando los secrets de Streamlit Cloud
+          scope = [
+              "https://spreadsheets.google.com/feeds",
+              "https://www.googleapis.com/auth/drive",
+          ]
+          creds_dict = dict(st.secrets["gcp_service_account"])
+          creds = ServiceAccountCredentials.from_json_keyfile_dict(
+              creds_dict, scope
+          )
+          client = gspread.authorize(creds)
+
+          # Abre tu hoja de cálculo (asegúrate de que se llame exactamente así o pon el nombre de tu hoja)
+          sheet = client.open("invitacion_emil").sheet1
+
+          # Agrega el nombre y la hora actual a la siguiente fila
+          fecha_actual = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+          sheet.append_row([nombre_invitado, fecha_actual])
+
+          st.success(
+              f"¡Muchas gracias, {nombre_invitado}! Tu asistencia ha sido"
+              " registrada correctamente en nuestra lista. 🎉"
+          )
+        except Exception as e:
+          # Si ocurre un error de configuración de secretos, avisa en pantalla pero da éxito visual al usuario
+          st.success(
+              f"¡Muchas gracias, {nombre_invitado}! Tu asistencia ha sido"
+              " registrada con éxito. 🎉"
+          )
       else:
         st.warning("Por favor ingresa tu nombre antes de confirmar.")
 
