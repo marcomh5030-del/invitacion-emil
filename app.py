@@ -106,7 +106,7 @@ horas_faltantes = divmod(diferencia.seconds, 3600)[0]
 
 if dias_faltantes > 0:
   texto_contador = (
-      f"⏳ ¡Faltan **{dias_faltantes} días** y {horas_faltantes} horas para la"
+      f"⏳ ¡Faltan {dias_faltantes} días y {horas_faltantes} horas para la"
       " gran fiesta! 🎉"
   )
 elif dias_faltantes == 0:
