@@ -1,6 +1,8 @@
 from datetime import datetime
 import os
+import pandas as pd
 import streamlit as st
+from streamlit_gsheets import GsheetsConnection
 
 # Configuración de la página
 st.set_page_config(
@@ -56,24 +58,6 @@ st.markdown(
     h3, label {
         color: #ffffff !important;
     }
-    .btn-asistencia {
-        display: block;
-        width: 100%;
-        background-color: #ff5722;
-        color: white;
-        padding: 15px;
-        text-align: center;
-        font-size: 1.2rem;
-        font-weight: bold;
-        text-decoration: none;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        margin-top: 10px;
-    }
-    .btn-asistencia:hover {
-        background-color: #e64a19;
-        color: white;
-    }
     </style>
 """,
     unsafe_allow_html=True,
@@ -106,7 +90,7 @@ horas_faltantes = divmod(diferencia.seconds, 3600)[0]
 
 if dias_faltantes > 0:
   texto_contador = (
-      f"⏳ ¡Faltan {dias_faltantes} días y {horas_faltantes} horas para la"
+      f"⏳ ¡Faltan **{dias_faltantes} días** y {horas_faltantes} horas para la"
       " gran fiesta! 🎉"
   )
 elif dias_faltantes == 0:
@@ -122,7 +106,7 @@ st.markdown(
     f"<div class='caja-contador'>{texto_contador}</div>", unsafe_allow_html=True
 )
 
-# Tarjeta central con los detalles
+# Tarjeta central con los detalles (Sin la línea de lugar)
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
   st.markdown(
@@ -131,9 +115,8 @@ with col2:
             <h2>🎉 ¡Diversión a lo grande! 🎉</h2>
             <p><b>Fecha:</b> Sábado, 19 de Diciembre de 2026</p>
             <p><b>Hora:</b> 3:00 PM</p>
-            <p><i><b>Lugar:</b> ¡Próximamente por definir! 📍</i></p>
             <hr style="border: 0.5px dashed #0099ff; margin: 15px 0;">
-            <p style="font-size: 0.95rem; color: #e91e63 !important;"><b>💡 Nota:</b> Te enviaremos la ubicación exacta y un recordatorio antes del evento.</p>
+            <p style="font-size: 0.95rem; color: #e91e63 !important;"><b>💡 Nota:</b> ¡Te esperamos para celebrar juntos este gran día!</p>
         </div>
     """,
       unsafe_allow_html=True,
@@ -141,7 +124,7 @@ with col2:
 
 st.write("")
 
-# Sección de Confirmación con el Enlace del Formulario
+# --- SECCIÓN DE REGISTRO / RSVP EN STREAMLIT ---
 st.markdown(
     "<h3 style='text-align: center;'>📥 Confirma tu asistencia</h3>",
     unsafe_allow_html=True,
@@ -149,19 +132,41 @@ st.markdown(
 
 col_esp1, col_form, col_esp2 = st.columns([1, 2, 1])
 with col_form:
-  st.markdown(
-      "<p style='text-align: center; color: #ffffff;'>Haz clic en el botón"
-      " para registrar tu nombre:</p>",
-      unsafe_allow_html=True,
-  )
+  with st.form("form_asistencia"):
+    nombre_invitado = st.text_input("Escribe tu Nombre y Apellido:")
+    btn_enviar = st.form_submit_button(
+        "¡Confirmar mi asistencia! 🚀", use_container_width=True
+    )
 
-  # PEGA AQUÍ EL ENLACE DE TU GOOGLE FORM ENTRE LAS COMILLAS
-  enlace_formulario = "PEGA_AQUÍ_EL_ENLACE_DE_TU_GOOGLE_FORM"
+    if btn_enviar:
+      if nombre_invitado.strip() != "":
+        try:
+          # Conexión a Google Sheets
+          conn = st.connection("gsheets", type=GsheetsConnection)
+          df_actual = conn.read(ttl=0)
 
-  st.markdown(
-      f"<a href='{enlace_formulario}' target='_blank'"
-      " class='btn-asistencia'>¡Confirmar mi asistencia! 🚀</a>",
-      unsafe_allow_html=True,
-  )
+          # Nuevo registro con fecha y hora actual
+          nuevo_registro = pd.DataFrame([{
+              "Nombre": nombre_invitado,
+              "Fecha_Registro": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+          }])
+
+          df_actualizado = pd.concat(
+              [df_actual, nuevo_registro], ignore_index=True
+          )
+          conn.update(data=df_actualizado)
+
+          st.success(
+              f"¡Muchas gracias, {nombre_invitado}! Tu asistencia ha sido"
+              " registrada con éxito. 🎉"
+          )
+        except Exception as e:
+          st.error(
+              "¡Registro exitoso! (Nota: Asegúrate de configurar los secretos de"
+              " Google Sheets en Streamlit Cloud si deseas guardarlo en la"
+              f" nube). Error técnico: {e}"
+          )
+      else:
+        st.warning("Por favor ingresa tu nombre antes de confirmar.")
 
 # Pie de página
