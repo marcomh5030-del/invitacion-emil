@@ -1,6 +1,5 @@
 from datetime import datetime
 import os
-from streamlit_gsheets import GsheetsConnection
 import streamlit as st
 
 # Configuración de la página
@@ -57,6 +56,24 @@ st.markdown(
     h3, label {
         color: #ffffff !important;
     }
+    .btn-asistencia {
+        display: block;
+        width: 100%;
+        background-color: #ff5722;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: bold;
+        text-decoration: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        margin-top: 10px;
+    }
+    .btn-asistencia:hover {
+        background-color: #e64a19;
+        color: white;
+    }
     </style>
 """,
     unsafe_allow_html=True,
@@ -105,7 +122,7 @@ st.markdown(
     f"<div class='caja-contador'>{texto_contador}</div>", unsafe_allow_html=True
 )
 
-# Tarjeta central con los detalles (sin dirección por ahora)
+# Tarjeta central con los detalles
 col1, col2, col3 = st.columns([1, 4, 1])
 with col2:
   st.markdown(
@@ -124,7 +141,7 @@ with col2:
 
 st.write("")
 
-# Sección interactiva de Confirmación de Asistencia (RSVP) conectado a Google Sheets
+# Sección de Confirmación con el Enlace del Formulario
 st.markdown(
     "<h3 style='text-align: center;'>📥 Confirma tu asistencia</h3>",
     unsafe_allow_html=True,
@@ -132,38 +149,19 @@ st.markdown(
 
 col_esp1, col_form, col_esp2 = st.columns([1, 2, 1])
 with col_form:
-  nombre_invitado = st.text_input("Escribe tu nombre y apellido:")
+  st.markdown(
+      "<p style='text-align: center; color: #ffffff;'>Haz clic en el botón"
+      " para registrar tu nombre:</p>",
+      unsafe_allow_html=True,
+  )
 
-  if st.button("¡Sí voy a asistir! 🚀", use_container_width=True):
-    if nombre_invitado.strip() != "":
-      try:
-        # Conexión a Google Sheets
-        conn = st.connection("gsheets", type=GsheetsConnection)
-        # Leer datos actuales
-        existing_data = conn.read(worksheet="Asistencias", ttl=5)
+  # PEGA AQUÍ EL ENLACE DE TU GOOGLE FORM ENTRE LAS COMILLAS
+  enlace_formulario = "PEGA_AQUÍ_EL_ENLACE_DE_TU_GOOGLE_FORM"
 
-        # Crear nueva fila con el nombre y la hora actual
-        import pandas as pd
+  st.markdown(
+      f"<a href='{enlace_formulario}' target='_blank'"
+      " class='btn-asistencia'>¡Confirmar mi asistencia! 🚀</a>",
+      unsafe_allow_html=True,
+  )
 
-        nueva_fila = pd.DataFrame([{
-            "Nombre": nombre_invitado.strip(),
-            "Fecha": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        }])
-
-        # Unir los datos nuevos con los existentes
-        updated_data = pd.concat([existing_data, nueva_fila], ignore_index=True)
-
-        # Actualizar la hoja de cálculo
-        conn.update(worksheet="Asistencias", data=updated_data)
-
-        st.success(
-            f"¡Yupi, **{nombre_invitado}**! Tu asistencia a la fiesta de Emil ha"
-            " quedado registrada en nuestra lista. ¡Te esperamos! 🎊"
-        )
-      except Exception as e:
-        st.error(
-            "Hubo un pequeño detalle al conectar con la lista, pero tu"
-            f" entusiasmo ya quedó anotado. (Error: {e})"
-        )
-    else:
-      st.warning("Por favor, escribe tu nombre antes de confirmar.")
+# Pie de página
