@@ -119,49 +119,44 @@ else:
   )
 
 st.markdown(
-    f"<div class='caja-contador'>{texto_contador}</div>", unsafe_allow_html=True
-)
+    """
+    <h3 style='text-align: center; color: #ffffff;'>📥 ¡No faltes!</h3>
+    <p style='text-align: center; color: #ffffff;'>Confirma tu asistencia para que Pocoyó sepa cuántos globos traer:</p>
 
-# Tarjeta central con los detalles
-col1, col2, col3 = st.columns([1, 4, 1])
-with col2:
-  st.markdown(
-      """
-        <div class="tarjeta">
-            <h2>🎉 ¡Diversión a lo grande! 🎉</h2>
-            <p><b>Fecha:</b> Sábado, 19 de Diciembre de 2026</p>
-            <p><b>Hora:</b> 3:00 PM</p>
-            <p><i><b>Lugar:</b> ¡Próximamente por definir! 📍</i></p>
-            <hr style="border: 0.5px dashed #0099ff; margin: 15px 0;">
-            <p style="font-size: 0.95rem; color: #e91e63 !important;"><b>💡 Nota:</b> Te enviaremos la ubicación exacta y un recordatorio antes del evento.</p>
-        </div>
+    <!-- TARJETA DE CONFIRMACIÓN CON FONDO BLANCO Y BORDES -->
+    <div style="
+        background-color: #ffffff;
+        padding: 25px;
+        border-radius: 25px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        text-align: center;
+        border: 5px solid #4caf50; /* Borde verde festivo */
+        margin-bottom: 30px;
+        max-width: 600px; /* Controla el ancho máximo */
+        margin-left: auto; /* Centra la tarjeta */
+        margin-right: auto; /* Centra la tarjeta */
+    ">
+        <h4 style="color: #333333 !important; margin-bottom: 15px;">Confirma tu asistencia aquí</h4>
+        <p style="color: #666666 !important; font-size: 1rem; margin-bottom: 25px;">
+            Haz clic en el botón de abajo para abrir el formulario de registro. ¡Es rápido y sencillo!
+        </p>
+";
     """,
-      unsafe_allow_html=True,
-  )
-
-st.write("")
-
-# Sección de Confirmación con el Enlace del Formulario
-st.markdown(
-    "<h3 style='text-align: center;'>📥 Confirma tu asistencia</h3>",
     unsafe_allow_html=True,
 )
 
-col_esp1, col_form, col_esp2 = st.columns([1, 2, 1])
+# Centra el botón dentro de su propia columna
+col_esp1, col_form, col_esp2 = st.columns([1, 4, 1])
 with col_form:
-  st.markdown(
-      "<p style='text-align: center; color: #ffffff;'>Haz clic en el botón"
-      " para registrar tu nombre:</p>",
-      unsafe_allow_html=True,
-  )
-
   # PEGA AQUÍ EL ENLACE DE TU GOOGLE FORM ENTRE LAS COMILLAS
   enlace_formulario = "PEGA_AQUÍ_EL_ENLACE_DE_TU_GOOGLE_FORM"
 
   st.markdown(
       f"<a href='{enlace_formulario}' target='_blank'"
-      " class='btn-asistencia'>¡Confirmar mi asistencia! 🚀</a>",
+      " class='btn-asistencia' style='font-size: 1.4rem;'>¡Confirmar mi asistencia! 🚀</a>",
       unsafe_allow_html=True,
   )
+
+st.write("")
 
 # Pie de página
